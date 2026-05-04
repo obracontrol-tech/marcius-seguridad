@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marcius Seguridad · Panel del Mando</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --negro:#08080a;--gris-oscuro:#111115;--gris-panel:#1a1a20;--gris-borde:#2a2a35;
+  --dorado:#c8a84b;--dorado-claro:#e2c06a;--dorado-oscuro:#9a7a2e;
+  --verde:#27ae60;--rojo:#e74c3c;--azul:#2980b9;--morado:#8e44ad;--wa:#25D366;
+  --blanco:#f0f0ec;--gris-txt:#888899;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--negro);color:var(--blanco);font-family:'Barlow',sans-serif;min-height:100vh;}
+
+/* ===== LOGIN ===== */
+#login-screen{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:2rem;background:radial-gradient(ellipse at 20% 20%,rgba(200,168,75,0.08) 0%,transparent 60%),var(--negro);
+}
+.login-escudo{
+  width:90px;height:90px;margin:0 auto 1rem;
+  background:linear-gradient(135deg,var(--dorado-oscuro),var(--dorado));
+  clip-path:polygon(50% 0%,100% 20%,100% 70%,50% 100%,0% 70%,0% 20%);
+  display:flex;align-items:center;justify-content:center;font-size:2.2rem;
+  filter:drop-shadow(0 0 20px rgba(200,168,75,0.4));
+}
+.login-titulo{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;color:var(--dorado);letter-spacing:0.1em;text-align:center;}
+.login-sub{font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;letter-spacing:0.3em;color:var(--gris-txt);text-transform:uppercase;text-align:center;margin-bottom:2rem;}
+.login-card{background:var(--gris-panel);border:1px solid rgba(200,168,75,0.2);border-radius:16px;padding:2rem;width:100%;max-width:360px;}
+.form-group{margin-bottom:1.2rem;}
+.form-group label{display:block;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gris-txt);margin-bottom:0.5rem;}
+.form-group input{width:100%;background:var(--gris-oscuro);border:1px solid var(--gris-borde);border-radius:8px;padding:0.85rem 1rem;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;}
+.form-group input:focus{border-color:var(--dorado);}
+.btn-login{width:100%;background:linear-gradient(135deg,var(--dorado-oscuro),var(--dorado));color:var(--negro);border:none;border-radius:10px;padding:1rem;font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:opacity 0.2s;}
+.btn-login:hover{opacity:0.9;}
+
+/* ===== PANEL PRINCIPAL ===== */
+#panel-screen{display:none;min-height:100vh;flex-direction:column;}
+
+/* HEADER */
+.panel-header{
+  background:var(--gris-oscuro);border-bottom:1px solid rgba(200,168,75,0.15);
+  padding:0.8rem 1.5rem;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.ph-left{display:flex;align-items:center;gap:1rem;}
+.ph-escudo{width:36px;height:36px;background:linear-gradient(135deg,var(--dorado-oscuro),var(--dorado));clip-path:polygon(50% 0%,100% 20%,100% 70%,50% 100%,0% 70%,0% 20%);display:flex;align-items:center;justify-content:center;font-size:1rem;}
+.ph-titulo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--dorado);letter-spacing:0.08em;}
+.ph-sub{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;color:var(--gris-txt);letter-spacing:0.15em;text-transform:uppercase;}
+.ph-right{display:flex;align-items:center;gap:1rem;}
+.firebase-dot{width:8px;height:8px;border-radius:50%;background:var(--verde);animation:pulse-g 2s infinite;}
+@keyframes pulse-g{0%,100%{box-shadow:0 0 0 0 rgba(39,174,96,0.5);}50%{box-shadow:0 0 0 6px rgba(39,174,96,0);}}
+.firebase-label{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;color:var(--verde);letter-spacing:0.1em;}
+.btn-cerrar{background:none;border:1px solid rgba(200,168,75,0.25);color:var(--dorado);border-radius:6px;padding:0.3rem 0.7rem;font-size:0.72rem;font-family:'Barlow Condensed',sans-serif;font-weight:700;cursor:pointer;}
+.ph-hora{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--dorado);letter-spacing:0.05em;}
+
+/* CONTENIDO */
+.panel-body{flex:1;padding:1.5rem;max-width:1400px;margin:0 auto;width:100%;}
+
+/* KPIs */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;}
+@media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+.kpi-card{
+  background:var(--gris-panel);border:1px solid var(--gris-borde);border-radius:14px;
+  padding:1.2rem;position:relative;overflow:hidden;transition:border-color 0.2s;
+}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi-card.verde::before{background:linear-gradient(90deg,transparent,var(--verde),transparent);}
+.kpi-card.dorado::before{background:linear-gradient(90deg,transparent,var(--dorado),transparent);}
+.kpi-card.rojo::before{background:linear-gradient(90deg,transparent,var(--rojo),transparent);}
+.kpi-card.azul::before{background:linear-gradient(90deg,transparent,var(--azul),transparent);}
+.kpi-icon{font-size:1.8rem;margin-bottom:0.5rem;}
+.kpi-val{font-family:'Bebas Neue',sans-serif;font-size:2.8rem;line-height:1;margin-bottom:0.2rem;}
+.kpi-card.verde .kpi-val{color:var(--verde);}
+.kpi-card.dorado .kpi-val{color:var(--dorado);}
+.kpi-card.rojo .kpi-val{color:var(--rojo);}
+.kpi-card.azul .kpi-val{color:var(--azul);}
+.kpi-label{font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gris-txt);}
+
+/* GRID PRINCIPAL */
+.main-grid{display:grid;grid-template-columns:1fr 380px;gap:1.5rem;margin-bottom:1.5rem;}
+@media(max-width:1024px){.main-grid{grid-template-columns:1fr;}}
+
+/* TABLA AGENTES */
+.section-title{font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--dorado);margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
+.agentes-tabla{background:var(--gris-panel);border:1px solid var(--gris-borde);border-radius:14px;overflow:hidden;}
+.tabla-header{display:grid;grid-template-columns:2fr 2fr 1fr 1fr 1fr 1fr;gap:0;background:var(--gris-oscuro);padding:0.7rem 1.2rem;border-bottom:1px solid var(--gris-borde);}
+.th{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gris-txt);}
+.agente-fila{display:grid;grid-template-columns:2fr 2fr 1fr 1fr 1fr 1fr;gap:0;padding:0.9rem 1.2rem;border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.15s;align-items:center;}
+.agente-fila:last-child{border-bottom:none;}
+.agente-fila:hover{background:rgba(200,168,75,0.04);}
+.af-nombre{font-weight:600;font-size:0.9rem;color:var(--blanco);}
+.af-puesto{font-size:0.82rem;color:var(--gris-txt);}
+.af-estado{display:inline-flex;align-items:center;gap:0.4rem;padding:0.2rem 0.6rem;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.08em;}
+.af-estado.activo{background:rgba(39,174,96,0.15);color:var(--verde);}
+.af-estado.pausa{background:rgba(200,168,75,0.15);color:var(--dorado);}
+.af-estado.offline{background:rgba(136,136,153,0.15);color:var(--gris-txt);}
+.af-estado.panico{background:rgba(231,76,60,0.2);color:var(--rojo);animation:blink 0.6s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.af-dot{width:7px;height:7px;border-radius:50%;background:currentColor;}
+.af-valor{font-family:'Barlow Condensed',sans-serif;font-size:0.88rem;color:var(--blanco);}
+.af-valor.gold{color:var(--dorado);}
+.af-valor.rojo{color:var(--rojo);}
+.sin-agentes{text-align:center;padding:3rem;color:var(--gris-txt);font-size:0.88rem;}
+.sin-agentes .big{font-family:'Bebas Neue',sans-serif;font-size:2rem;display:block;color:var(--gris-borde);margin-bottom:0.5rem;}
+
+/* MAPA PANEL */
+.mapa-panel{background:var(--gris-panel);border:1px solid var(--gris-borde);border-radius:14px;overflow:hidden;}
+#panel-map{height:320px;width:100%;}
+.mapa-leyenda{padding:0.8rem 1rem;display:flex;gap:1rem;flex-wrap:wrap;}
+.leyenda-item{display:flex;align-items:center;gap:0.4rem;font-size:0.72rem;color:var(--gris-txt);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.05em;}
+.ley-dot{width:10px;height:10px;border-radius:50%;}
+
+/* ALERTAS PANEL */
+.alertas-panel{background:var(--gris-panel);border:1px solid var(--gris-borde);border-radius:14px;padding:1.2rem;margin-bottom:1.5rem;}
+.alerta-item{display:flex;align-items:center;gap:0.8rem;padding:0.7rem 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+.alerta-item:last-child{border-bottom:none;}
+.alerta-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.alerta-dot.panico{background:var(--rojo);animation:blink 0.6s infinite;}
+.alerta-dot.incidencia{background:#e67e22;}
+.alerta-dot.ronda{background:var(--morado);}
+.alerta-dot.entrada{background:var(--verde);}
+.alerta-dot.salida{background:var(--azul);}
+.alerta-texto{flex:1;font-size:0.85rem;color:var(--blanco);}
+.alerta-hora{font-size:0.72rem;color:var(--gris-txt);font-family:'Barlow Condensed',sans-serif;white-space:nowrap;}
+.sin-alertas{text-align:center;padding:1.5rem;color:var(--gris-txt);font-size:0.83rem;}
+
+/* PÁNICO OVERLAY */
+.panico-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(180,0,0,0.15);backdrop-filter:blur(2px);
+  align-items:center;justify-content:center;
+}
+.panico-overlay.show{display:flex;animation:panico-flash 0.5s infinite;}
+@keyframes panico-flash{0%,100%{background:rgba(180,0,0,0.15);}50%{background:rgba(180,0,0,0.3);}}
+.panico-card{
+  background:#1a0000;border:2px solid var(--rojo);border-radius:16px;
+  padding:2rem;max-width:420px;width:90%;text-align:center;
+  box-shadow:0 0 60px rgba(231,76,60,0.5);
+}
+.panico-titulo{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:var(--rojo);letter-spacing:0.1em;margin-bottom:0.5rem;}
+.panico-info{font-size:0.95rem;color:#ffaaaa;line-height:1.7;margin-bottom:1.5rem;}
+.panico-btns{display:flex;gap:0.8rem;justify-content:center;}
+.btn-atendido{background:linear-gradient(135deg,#1a5c33,var(--verde));color:#fff;border:none;border-radius:10px;padding:0.8rem 1.5rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;}
+.btn-llamar{background:linear-gradient(135deg,#075E54,#25D366);color:#fff;border:none;border-radius:10px;padding:0.8rem 1.5rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;}
+
+/* TOAST */
+.toast{position:fixed;top:80px;left:50%;transform:translateX(-50%);background:var(--dorado);color:var(--negro);padding:0.7rem 1.5rem;border-radius:30px;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:700;letter-spacing:0.08em;z-index:300;opacity:0;transition:opacity 0.3s;white-space:nowrap;pointer-events:none;}
+.toast.show{opacity:1;}
+.toast.red{background:var(--rojo);color:#fff;}
+.toast.green{background:var(--verde);color:#fff;}
+
+/* LEAFLET */
+.leaflet-container{background:#111!important;}
+.leaflet-tile{filter:brightness(0.65) saturate(0.5);}
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="login-screen">
+  <div class="login-escudo">🛡️</div>
+  <div class="login-titulo">MARCIUS</div>
+  <div class="login-sub">Panel de Control · Mando</div>
+  <div class="login-card">
+    <div class="form-group">
+      <label>Usuario</label>
+      <input type="text" id="login-user" placeholder="mando" value="mando">
+    </div>
+    <div class="form-group">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••">
+    </div>
+    <button class="btn-login" onclick="doLogin()">🔐 Acceder al Panel</button>
+  </div>
+</div>
+
+<!-- ===== PANEL ===== -->
+<div id="panel-screen" style="display:none;flex-direction:column;">
+
+  <!-- Header -->
+  <div class="panel-header">
+    <div class="ph-left">
+      <div class="ph-escudo">🛡️</div>
+      <div>
+        <div class="ph-titulo">MARCIUS SEGURIDAD</div>
+        <div class="ph-sub">Panel de Control · Tiempo Real</div>
+      </div>
+    </div>
+    <div class="ph-right">
+      <div class="firebase-dot"></div>
+      <span class="firebase-label">FIREBASE EN VIVO</span>
+      <div class="ph-hora" id="panel-hora">00:00:00</div>
+      <button class="btn-cerrar" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <div class="panel-body">
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi-card verde">
+        <div class="kpi-icon">👮</div>
+        <div class="kpi-val" id="kpi-activos">0</div>
+        <div class="kpi-label">Agentes Activos</div>
+      </div>
+      <div class="kpi-card dorado">
+        <div class="kpi-icon">🔄</div>
+        <div class="kpi-val" id="kpi-rondas">0</div>
+        <div class="kpi-label">Rondas Hoy</div>
+      </div>
+      <div class="kpi-card rojo">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-val" id="kpi-incidencias">0</div>
+        <div class="kpi-label">Incidencias</div>
+      </div>
+      <div class="kpi-card azul">
+        <div class="kpi-icon">🚨</div>
+        <div class="kpi-val" id="kpi-panicos">0</div>
+        <div class="kpi-label">Alertas Pánico</div>
+      </div>
+    </div>
+
+    <!-- Grid principal -->
+    <div class="main-grid">
+
+      <!-- Tabla agentes -->
+      <div>
+        <div class="section-title">👮 Estado de Agentes en Tiempo Real</div>
+        <div class="agentes-tabla">
+          <div class="tabla-header">
+            <div class="th">Agente</div>
+            <div class="th">Puesto</div>
+            <div class="th">Estado</div>
+            <div class="th">Horas</div>
+            <div class="th">Rondas</div>
+            <div class="th">GPS</div>
+          </div>
+          <div id="agentes-lista">
+            <div class="sin-agentes">
+              <span class="big">👮</span>
+              Esperando conexión de agentes...<br>
+              <small style="color:var(--gris-borde);margin-top:0.5rem;display:block;">Los agentes aparecerán aquí cuando inicien turno</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mapa -->
+      <div>
+        <div class="section-title">🗺️ Posiciones GPS en Vivo</div>
+        <div class="mapa-panel">
+          <div id="panel-map"></div>
+          <div class="mapa-leyenda">
+            <div class="leyenda-item"><div class="ley-dot" style="background:#27ae60"></div>Activo</div>
+            <div class="leyenda-item"><div class="ley-dot" style="background:#c8a84b"></div>Pausa</div>
+            <div class="leyenda-item"><div class="ley-dot" style="background:#e74c3c"></div>Pánico</div>
+            <div class="leyenda-item"><div class="ley-dot" style="background:#888"></div>Offline</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Alertas y eventos -->
+    <div class="section-title">📋 Registro de Eventos en Tiempo Real</div>
+    <div class="alertas-panel">
+      <div id="alertas-lista">
+        <div class="sin-alertas">Sin eventos registrados todavía</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PÁNICO OVERLAY -->
+<div class="panico-overlay" id="panico-overlay">
+  <div class="panico-card">
+    <div class="panico-titulo">🚨 ALERTA DE PÁNICO</div>
+    <div class="panico-info" id="panico-info">
+      Agente necesita asistencia inmediata
+    </div>
+    <div class="panico-btns">
+      <button class="btn-atendido" onclick="cerrarPanico()">✅ Atendido</button>
+      <button class="btn-llamar" id="btn-llamar-wa" onclick="llamarAgente()">📲 WhatsApp</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== FIREBASE CONFIG =====
+const firebaseConfig = {
+  apiKey: "AIzaSyCHRq3RWpQ3ytKLmTQNKhck6sOQXYv1rQE",
+  authDomain: "marcius-seguridad.firebaseapp.com",
+  databaseURL: "https://marcius-seguridad-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "marcius-seguridad",
+  storageBucket: "marcius-seguridad.firebasestorage.app",
+  messagingSenderId: "622500818420",
+  appId: "1:622500818420:web:8257f2ee1fca7ba3afdda1"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ===== ESTADO =====
+let agentesData = {};
+let alertasData = [];
+let panelMap = null;
+let agentMarkers = {};
+let kpiRondas = 0, kpiIncidencias = 0, kpiPanicos = 0;
+let panicoAgenteWA = '';
+
+// ===== LOGIN =====
+function doLogin(){
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value.trim();
+  if(!user || !pass){ showToast('Introduce usuario y contraseña','red'); return; }
+  // Credenciales del mando (en producción usar Firebase Auth)
+  if(user === 'mando' && pass === 'marcius2024'){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('panel-screen').style.display = 'flex';
+    initPanel();
+    showToast('Bienvenido al Panel de Mando','green');
+  } else {
+    showToast('Credenciales incorrectas','red');
+  }
+}
+
+function doLogout(){
+  document.getElementById('panel-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-pass').value = '';
+}
+
+// ===== INIT PANEL =====
+function initPanel(){
+  // Reloj
+  setInterval(()=>{
+    const now = new Date();
+    document.getElementById('panel-hora').textContent =
+      [now.getHours(),now.getMinutes(),now.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':');
+  },1000);
+
+  // Mapa
+  initPanelMap();
+
+  // Escuchar Firebase
+  escucharAgentes();
+  escucharEventos();
+}
+
+// ===== MAPA =====
+function initPanelMap(){
+  panelMap = L.map('panel-map',{zoomControl:true,attributionControl:false}).setView([37.3886,-5.9823],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(panelMap);
+}
+
+function actualizarMarkerAgente(id, datos){
+  if(!datos.lat || !datos.lon || datos.lat===0) return;
+  const lat = parseFloat(datos.lat);
+  const lon = parseFloat(datos.lon);
+  const estado = datos.estado || 'offline';
+  const color = estado==='activo'?'#27ae60':estado==='pausa'?'#c8a84b':estado==='panico'?'#e74c3c':'#888';
+
+  const ic = L.divIcon({
+    html:`<div style="width:32px;height:32px;border-radius:50%;background:${color};border:3px solid #fff;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 10px rgba(0,0,0,0.6);">👮</div>`,
+    className:'', iconSize:[32,32], iconAnchor:[16,16]
+  });
+
+  if(agentMarkers[id]){
+    agentMarkers[id].setLatLng([lat,lon]);
+    agentMarkers[id].setIcon(ic);
+  } else {
+    agentMarkers[id] = L.marker([lat,lon],{icon:ic}).addTo(panelMap);
+  }
+  agentMarkers[id].bindPopup(`<b style="color:${color}">${datos.agente||id}</b><br><small>${datos.puesto||'—'}</small><br><small>${datos.estado||'offline'}</small>`);
+}
+
+function eliminarMarkerAgente(id){
+  if(agentMarkers[id]){ panelMap.removeLayer(agentMarkers[id]); delete agentMarkers[id]; }
+}
+
+// ===== ESCUCHAR AGENTES FIREBASE =====
+function escucharAgentes(){
+  db.ref('agentes').on('value', snap => {
+    agentesData = snap.val() || {};
+    renderAgentes();
+    actualizarKPIs();
+  });
+}
+
+function renderAgentes(){
+  const c = document.getElementById('agentes-lista');
+  const ids = Object.keys(agentesData);
+
+  if(!ids.length){
+    c.innerHTML = `<div class="sin-agentes"><span class="big">👮</span>Esperando conexión de agentes...<br><small style="color:var(--gris-borde);margin-top:0.5rem;display:block;">Los agentes aparecerán cuando inicien turno</small></div>`;
+    return;
+  }
+
+  c.innerHTML = ids.map(id => {
+    const a = agentesData[id];
+    const estadoClass = a.estado||'offline';
+    const estadoLabel = a.estado==='activo'?'EN SERVICIO':a.estado==='pausa'?'EN PAUSA':a.estado==='panico'?'🚨 PÁNICO':'OFFLINE';
+    const gps = a.lat ? `${parseFloat(a.lat).toFixed(3)},${parseFloat(a.lon).toFixed(3)}` : '—';
+    actualizarMarkerAgente(id, a);
+    return `
+    <div class="agente-fila" id="fila-${id}">
+      <div>
+        <div class="af-nombre">${a.agente||id}</div>
+        <div style="font-size:0.7rem;color:var(--gris-txt);">${a.fecha||'—'}</div>
+      </div>
+      <div class="af-puesto">${a.puesto||'—'}</div>
+      <div><span class="af-estado ${estadoClass}"><span class="af-dot"></span>${estadoLabel}</span></div>
+      <div class="af-valor gold">${a.horas||'0h 0min'}</div>
+      <div class="af-valor">${a.rondas||0}</div>
+      <div class="af-valor" style="font-size:0.72rem;color:#5dade2;">${gps}</div>
+    </div>`;
+  }).join('');
+}
+
+function actualizarKPIs(){
+  const ids = Object.keys(agentesData);
+  const activos = ids.filter(id => agentesData[id].estado === 'activo' || agentesData[id].estado === 'pausa').length;
+  const panicos = ids.filter(id => agentesData[id].estado === 'panico').length;
+  let rondas = 0;
+  ids.forEach(id => { rondas += parseInt(agentesData[id].rondas||0); });
+
+  document.getElementById('kpi-activos').textContent = activos;
+  document.getElementById('kpi-rondas').textContent = rondas;
+  document.getElementById('kpi-panicos').textContent = kpiPanicos;
+  document.getElementById('kpi-incidencias').textContent = kpiIncidencias;
+}
+
+// ===== ESCUCHAR EVENTOS FIREBASE =====
+function escucharEventos(){
+  db.ref('eventos').limitToLast(50).on('child_added', snap => {
+    const ev = snap.val();
+    if(!ev) return;
+
+    // Actualizar datos del agente en Firebase
+    if(ev.agente){
+      const agenteKey = ev.agente.replace(/\s+/g,'_').replace(/·/g,'').trim();
+      const updates = { agente: ev.agente, puesto: ev.puesto||'—', estado: ev.estado||'activo', lat: ev.lat||0, lon: ev.lon||0, horas: ev.horas||'0h 0min', rondas: ev.rondas||0, fecha: ev.fecha||'—' };
+      db.ref(`agentes/${agenteKey}`).update(updates);
+    }
+
+    // KPIs
+    if(ev.tipo === 'INCIDENCIA') kpiIncidencias++;
+    if(ev.tipo === 'PANICO'){ kpiPanicos++; mostrarAlertaPanico(ev); }
+    if(ev.tipo === 'FIN TURNO' && ev.agente){
+      const key = ev.agente.replace(/\s+/g,'_').replace(/·/g,'').trim();
+      db.ref(`agentes/${key}`).update({estado:'offline'});
+      eliminarMarkerAgente(key);
+    }
+
+    document.getElementById('kpi-panicos').textContent = kpiPanicos;
+    document.getElementById('kpi-incidencias').textContent = kpiIncidencias;
+
+    // Agregar a lista de alertas
+    alertasData.unshift(ev);
+    renderAlertas();
+  });
+}
+
+function renderAlertas(){
+  const c = document.getElementById('alertas-lista');
+  if(!alertasData.length){
+    c.innerHTML = '<div class="sin-alertas">Sin eventos registrados todavía</div>';
+    return;
+  }
+  const tipoClase = {
+    'PANICO':'panico','INCIDENCIA':'incidencia','RONDA COMPLETA':'ronda',
+    'INICIO TURNO':'entrada','FIN TURNO':'salida','CHECKPOINT':'ronda',
+    'CUESTIONARIO RONDA':'ronda'
+  };
+  c.innerHTML = alertasData.slice(0,30).map(ev=>`
+    <div class="alerta-item">
+      <span class="alerta-dot ${tipoClase[ev.tipo]||'entrada'}"></span>
+      <span class="alerta-texto">
+        <b style="color:var(--dorado)">${ev.agente||'—'}</b> · 
+        <span style="color:var(--gris-txt);font-size:0.78rem;">${ev.puesto||'—'}</span><br>
+        <span style="font-size:0.82rem;">${ev.tipo||'—'}: ${(ev.descripcion||'').substring(0,60)}</span>
+      </span>
+      <span class="alerta-hora">${ev.hora||'—'}</span>
+    </div>`).join('');
+}
+
+// ===== ALERTA PÁNICO =====
+function mostrarAlertaPanico(ev){
+  const coords = ev.lat ? `${parseFloat(ev.lat).toFixed(4)}, ${parseFloat(ev.lon).toFixed(4)}` : 'No disponible';
+  const mapsLink = ev.lat ? `https://maps.google.com/?q=${ev.lat},${ev.lon}` : '#';
+  panicoAgenteWA = ev.telefono || '34611948590';
+
+  document.getElementById('panico-info').innerHTML = `
+    <b style="color:#ff6666;font-size:1.1rem;">👮 ${ev.agente||'Agente desconocido'}</b><br>
+    📍 ${ev.puesto||'—'}<br>
+    🕐 ${ev.hora||'—'}<br>
+    📌 Coordenadas: <a href="${mapsLink}" target="_blank" style="color:#ff9999;">${coords}</a>
+  `;
+  document.getElementById('panico-overlay').classList.add('show');
+
+  // Sonido alerta (beep)
+  try {
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880; gain.gain.value = 0.3;
+    osc.start(); setTimeout(()=>osc.stop(),500);
+  } catch(e){}
+
+  showToast('🚨 ALERTA DE PÁNICO RECIBIDA','red');
+}
+
+function cerrarPanico(){
+  document.getElementById('panico-overlay').classList.remove('show');
+  showToast('Alerta atendida','green');
+}
+
+function llamarAgente(){
+  const info = document.getElementById('panico-info').textContent;
+  const texto = encodeURIComponent(`🚨 PÁNICO ATENDIDO\nMando en camino.\n${info}`);
+  window.open(`https://wa.me/${panicoAgenteWA}?text=${texto}`,'_blank');
+}
+
+// ===== TOAST =====
+function showToast(msg,type=''){
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+type+' show';
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// Enter en login
+document.addEventListener('keydown', e => {
+  if(e.key==='Enter') doLogin();
+});
+</script>
+</body>
+</html>

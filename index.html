@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Marcius Seguridad · v4</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -773,6 +777,8 @@ function ejecutarPanico(){
   const mapsLink=lastLat?`https://maps.google.com/?q=${lastLat},${lastLon}`:'Sin GPS';
 
   // Registro historial
+  enviarEstadoFirebase('panico');
+  enviarEventoFirebase('PANICO','Botón de pánico activado');
   addHistorial('panico',`🚨 PÁNICO ACTIVADO · ${coords} · ${hora}`);
 
   // Mensaje sistema en WA chat
@@ -821,6 +827,8 @@ function fichar(tipo){
     renderBotones(); setStatus('active','🟢 Turno activo');
     iniciarGPS();
     guardarEnSheets('inicio_turno',{tipo:'INICIO TURNO',descripcion:'Inicio de turno',lat:lastLat||0,lon:lastLon||0});
+    enviarEstadoFirebase('activo');
+    enviarEventoFirebase('INICIO TURNO','Inicio de turno en '+puesto);
     waBotResponde(`✅ *Turno iniciado*\n👮 ${agente}\n📍 ${puesto}\n🕐 ${hora}\n\nEscribe *cuestionario* para iniciar el registro de ronda.`);
     document.getElementById('stat-turnos').textContent=parseInt(document.getElementById('stat-turnos').textContent)+1;
     showToast('Turno iniciado · '+hora,'green');
@@ -828,11 +836,15 @@ function fichar(tipo){
     estado='pausa'; inicioPausa=Date.now(); nPausas++;
     document.getElementById('srv-incid').textContent=nIncidencias;
     addHistorial('pausa','⏸ Pausa iniciada');
+    enviarEstadoFirebase('pausa');
+    enviarEventoFirebase('PAUSA','Pausa iniciada');
     renderBotones(); setStatus('paused','⏸ En pausa');
     showToast('Pausa registrada');
   } else if(tipo==='reanuda'){
     estado='activo'; if(inicioPausa)totalPausaMs+=Date.now()-inicioPausa; inicioPausa=null;
     addHistorial('reanuda','▶ Turno reanudado');
+    enviarEstadoFirebase('activo');
+    enviarEventoFirebase('REANUDA','Turno reanudado');
     renderBotones(); setStatus('active','🟢 Turno activo');
     showToast('Turno reanudado','green');
   } else if(tipo==='salida'){
@@ -848,6 +860,8 @@ function fichar(tipo){
     document.getElementById('turno-counter').style.display='none';
     document.getElementById('srv-inicio').textContent='—';
     document.getElementById('srv-horas').textContent='0h 0min';
+    enviarEstadoFirebase('offline');
+    enviarEventoFirebase('FIN TURNO',`Duración: ${h}h ${m}min. Rondas: ${rondasCompletas}`);
     waBotResponde(`🏁 *Turno finalizado*\n👮 ${agente} · ${puesto}\n⏱ ${h}h ${m}min\n🔄 Rondas: ${rondasCompletas}\n⚠️ Incidencias: ${nIncidencias}`);
     showToast(`Turno cerrado · ${h}h ${m}min`,'green');
     setTimeout(generarPDF, 800);
@@ -950,6 +964,8 @@ function marcarCheckpoint(id){
       document.getElementById('srv-rondas').textContent=rondasCompletas;
       document.getElementById('stat-rondas').textContent=rondasCompletas;
       addHistorial('checkpoint',`🏁 RONDA ${rondasCompletas} COMPLETADA`);
+      enviarEstadoFirebase('activo');
+      enviarEventoFirebase('RONDA COMPLETA',`Ronda ${rondasCompletas} completada en ${puesto}`);
       showToast(`🏁 Ronda ${rondasCompletas} completada!`,'purple');
       guardarEnSheets('ronda_completa',{tipo:'RONDA COMPLETA',descripcion:`Ronda ${rondasCompletas} completada`,lat:lastLat||0,lon:lastLon||0});
       waBotResponde(`🔄 *Ronda ${rondasCompletas} completada*\nTodos los checkpoints verificados ✅\n🕐 ${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}`);
@@ -1268,6 +1284,7 @@ function enviarIncidencia(){
   const coords=lastLat?` (${lastLat.toFixed(4)},${lastLon.toFixed(4)})`:'';
   addHistorial('incidencia',`⚠️ ${tipo}: ${desc.substring(0,40)}${coords}`);
   guardarEnSheets('incidencia',{tipo:'INCIDENCIA',descripcion:`${tipo}: ${desc}`,lat:lastLat||0,lon:lastLon||0});
+  enviarEventoFirebase('INCIDENCIA',`${tipo}: ${desc}`);
   waBotResponde(`⚠️ *Incidencia #${nIncidencias} registrada*\nTipo: ${tipo}\n${desc}\n🕐 ${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}`);
   closeModal('modal-incidencia');
   document.getElementById('inc-desc').value='';
@@ -1334,6 +1351,60 @@ function showToast(msg,type=''){
   t.textContent=msg; t.className='toast '+type+' show';
   setTimeout(()=>t.classList.remove('show'),2500);
 }
+
+
+// ===== FIREBASE TIEMPO REAL =====
+const firebaseConfig = {
+  apiKey: "AIzaSyCHRq3RWpQ3ytKLmTQNKhck6sOQXYv1rQE",
+  authDomain: "marcius-seguridad.firebaseapp.com",
+  databaseURL: "https://marcius-seguridad-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "marcius-seguridad",
+  storageBucket: "marcius-seguridad.firebasestorage.app",
+  messagingSenderId: "622500818420",
+  appId: "1:622500818420:web:8257f2ee1fca7ba3afdda1"
+};
+let fbApp = null, fbDb = null, agenteKey = '';
+
+function initFirebase(){
+  try {
+    if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    fbDb = firebase.database();
+    agenteKey = agente.replace(/\s+/g,'_').replace(/·/g,'').trim();
+    console.log('Firebase conectado - Marcius');
+  } catch(e){ console.warn('Firebase error:', e); }
+}
+
+function enviarEstadoFirebase(estadoVal){
+  if(!fbDb || !agenteKey) return;
+  const hTurno = horaEntrada ? formatMs(Date.now()-horaEntrada-totalPausaMs) : '0h 0min';
+  fbDb.ref('agentes/'+agenteKey).set({
+    agente, puesto, estado: estadoVal,
+    lat: lastLat||0, lon: lastLon||0,
+    horas: hTurno, rondas: rondasCompletas,
+    incidencias: nIncidencias,
+    fecha: new Date().toLocaleDateString('es-ES'),
+    ultimaActualizacion: Date.now()
+  });
+}
+
+function enviarEventoFirebase(tipo, descripcion){
+  if(!fbDb) return;
+  const hora = new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  fbDb.ref('eventos').push({
+    agente, puesto, tipo, descripcion,
+    estado: estado||'activo',
+    lat: lastLat||0, lon: lastLon||0,
+    hora, fecha: new Date().toLocaleDateString('es-ES'),
+    horas: horaEntrada ? formatMs(Date.now()-horaEntrada-totalPausaMs) : '—',
+    rondas: rondasCompletas,
+    timestamp: Date.now()
+  });
+}
+
+// Actualizar GPS en Firebase cada 30 segundos
+setInterval(()=>{
+  if(estado==='activo' && fbDb && lastLat) enviarEstadoFirebase('activo');
+}, 30000);
 
 updateClock();
 </script>
