@@ -680,6 +680,7 @@ function doLogin(){
   const tel=document.getElementById('login-tel').value.trim()||'34611948590';
   const gs=document.getElementById('login-sheets').value.trim();
   if(!ag||!pin||!ps){showToast('Completa todos los campos','red');return;}
+  initFirebase();
   if(pin.length<4){showToast('PIN de 4 dígitos','red');return;}
   agente=ag; puesto=ps; telefonoMando=tel; sheetsURL=gs;
   document.getElementById('wa-tel-display').textContent='+'+tel;
