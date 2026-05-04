@@ -269,6 +269,47 @@ body{background:var(--negro);color:var(--blanco);font-family:'Barlow',sans-serif
 .tab-section.active{display:block;}
 .leaflet-container{background:#111!important;}
 .leaflet-tile{filter:brightness(0.7) saturate(0.6);}
+
+/* ====== FOTOS INCIDENCIA ====== */
+.foto-preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;margin-bottom:1rem;}
+.foto-thumb{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;background:var(--gris-oscuro);border:1px solid rgba(200,168,75,0.2);}
+.foto-thumb img{width:100%;height:100%;object-fit:cover;}
+.foto-thumb .del-foto{position:absolute;top:3px;right:3px;background:rgba(192,57,43,0.85);border:none;border-radius:50%;width:20px;height:20px;color:#fff;font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.btn-camara{width:100%;background:var(--gris-oscuro);border:2px dashed rgba(200,168,75,0.35);border-radius:10px;padding:1rem;color:var(--dorado);font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;font-weight:700;letter-spacing:0.07em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.6rem;margin-bottom:0.8rem;transition:border-color 0.2s;}
+.btn-camara:active{border-color:var(--dorado);}
+.foto-counter{font-size:0.72rem;color:var(--gris-txt);text-align:right;margin-bottom:0.5rem;}
+/* Visor foto grande */
+.foto-visor-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:400;align-items:center;justify-content:center;}
+.foto-visor-overlay.show{display:flex;}
+.foto-visor-img{max-width:95vw;max-height:90vh;border-radius:8px;object-fit:contain;}
+.foto-visor-close{position:absolute;top:1rem;right:1rem;background:rgba(200,168,75,0.2);border:1px solid var(--dorado);color:var(--dorado);border-radius:50%;width:36px;height:36px;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+/* ====== ENTREGA DE PUESTO ====== */
+.entrega-header{background:linear-gradient(135deg,#1a0a00,#2a1500);border:1px solid rgba(200,168,75,0.3);border-radius:12px;padding:1rem;margin-bottom:1rem;text-align:center;}
+.entrega-titulo{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--dorado);letter-spacing:0.1em;}
+.entrega-sub{font-size:0.75rem;color:var(--gris-txt);text-transform:uppercase;letter-spacing:0.15em;}
+.checklist-item{display:flex;align-items:center;gap:0.8rem;padding:0.7rem 0;border-bottom:1px solid rgba(255,255,255,0.05);cursor:pointer;}
+.checklist-item:last-child{border-bottom:none;}
+.checklist-check{width:22px;height:22px;border-radius:6px;border:2px solid rgba(200,168,75,0.4);background:var(--gris-oscuro);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s;}
+.checklist-check.checked{background:var(--verde);border-color:var(--verde);}
+.checklist-check.checked::after{content:'✓';color:#fff;font-size:0.85rem;font-weight:700;}
+.checklist-texto{flex:1;font-size:0.9rem;color:var(--blanco);}
+.checklist-texto.checked{color:var(--gris-txt);text-decoration:line-through;}
+/* Canvas firma */
+.firma-container{background:var(--gris-oscuro);border:2px solid rgba(200,168,75,0.3);border-radius:12px;overflow:hidden;margin-bottom:0.8rem;position:relative;}
+.firma-label{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--gris-txt);padding:0.5rem 0.8rem;border-bottom:1px solid rgba(255,255,255,0.05);}
+#canvas-firma{display:block;width:100%;height:140px;cursor:crosshair;touch-action:none;}
+.firma-btns{display:flex;gap:0.5rem;padding:0.5rem;}
+.btn-limpiar-firma{flex:1;background:var(--gris-medio);border:1px solid rgba(255,255,255,0.1);color:var(--gris-txt);border-radius:7px;padding:0.5rem;font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;}
+.firma-ok{width:12px;height:12px;border-radius:50%;background:#888;display:inline-block;margin-left:0.4rem;vertical-align:middle;}
+.firma-ok.activa{background:var(--verde);}
+.entrega-agentes{display:grid;grid-template-columns:1fr 1fr;gap:0.7rem;margin-bottom:1rem;}
+.agente-card{background:var(--gris-oscuro);border:1px solid rgba(200,168,75,0.2);border-radius:10px;padding:0.8rem;cursor:pointer;transition:all 0.2s;text-align:center;}
+.agente-card.selected{border-color:var(--dorado);background:rgba(200,168,75,0.08);}
+.agente-card-nombre{font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;font-weight:700;color:var(--blanco);}
+.agente-card-num{font-size:0.68rem;color:var(--gris-txt);}
+.btn-completar-entrega{width:100%;background:linear-gradient(135deg,#1a5c33,var(--verde));color:#fff;border:none;border-radius:12px;padding:1rem;font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.1em;cursor:pointer;margin-top:0.5rem;}
+.btn-completar-entrega:disabled{opacity:0.3;cursor:not-allowed;}
 </style>
 </head>
 <body>
@@ -509,6 +550,68 @@ body{background:var(--negro);color:var(--blanco);font-family:'Barlow',sans-serif
       </div>
     </div>
 
+
+    <!-- ========== TAB: ENTREGA DE PUESTO ========== -->
+    <div class="tab-section" id="tab-entrega">
+
+      <div class="entrega-header">
+        <div class="entrega-titulo">🤝 ENTREGA DE PUESTO</div>
+        <div class="entrega-sub">Protocolo oficial de cambio de turno</div>
+      </div>
+
+      <!-- Paso 1: Agente entrante -->
+      <div class="panel">
+        <div class="panel-title">👮 Agente Entrante</div>
+        <div class="entrega-agentes" id="entrega-agentes-grid">
+          <!-- generado por JS -->
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label>O escribe el nombre</label>
+          <input type="text" id="entrega-agente-manual" placeholder="Nombre del agente entrante...">
+        </div>
+      </div>
+
+      <!-- Paso 2: Checklist -->
+      <div class="panel">
+        <div class="panel-title">✅ Checklist de Entrega</div>
+        <div id="checklist-entrega"></div>
+      </div>
+
+      <!-- Paso 3: Observaciones -->
+      <div class="panel">
+        <div class="panel-title">📝 Novedades del Turno</div>
+        <textarea id="entrega-novedades" style="width:100%;background:var(--gris-oscuro);border:1px solid rgba(200,168,75,0.2);border-radius:8px;padding:0.75rem;color:var(--blanco);font-family:'Barlow',sans-serif;font-size:0.9rem;resize:none;height:80px;outline:none;margin-bottom:0;" placeholder="Incidencias pendientes, observaciones importantes para el siguiente turno..."></textarea>
+      </div>
+
+      <!-- Paso 4: Firma agente saliente -->
+      <div class="panel">
+        <div class="panel-title">✍️ Firma Agente Saliente <span class="firma-ok" id="firma-saliente-ok"></span></div>
+        <div class="firma-container">
+          <div class="firma-label" id="firma-saliente-label">Firma aquí abajo</div>
+          <canvas id="canvas-firma-saliente" height="140"></canvas>
+          <div class="firma-btns">
+            <button class="btn-limpiar-firma" onclick="limpiarFirma('saliente')">🗑️ Borrar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Paso 5: Firma agente entrante -->
+      <div class="panel">
+        <div class="panel-title">✍️ Firma Agente Entrante <span class="firma-ok" id="firma-entrante-ok"></span></div>
+        <div class="firma-container">
+          <div class="firma-label" id="firma-entrante-label">Firma aquí abajo</div>
+          <canvas id="canvas-firma-entrante" height="140"></canvas>
+          <div class="firma-btns">
+            <button class="btn-limpiar-firma" onclick="limpiarFirma('entrante')">🗑️ Borrar</button>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-completar-entrega" id="btn-completar-entrega" onclick="completarEntrega()" disabled>
+        ✅ CONFIRMAR ENTREGA DE PUESTO
+      </button>
+
+    </div>
   </div><!-- /main-content -->
 
   <div class="bottom-nav">
@@ -516,6 +619,7 @@ body{background:var(--negro);color:var(--blanco);font-family:'Barlow',sans-serif
     <button class="nav-btn" id="nav-gps" onclick="switchTab('gps')"><span>🗺️</span>GPS</button>
     <button class="nav-btn" id="nav-whatsapp" onclick="switchTab('whatsapp')"><span>💬</span>WA</button>
     <button class="nav-btn" id="nav-historial" onclick="switchTab('historial')"><span>📋</span>Log</button>
+    <button class="nav-btn" id="nav-entrega" onclick="switchTab('entrega')"><span>🤝</span>Entrega</button>
     <button class="nav-btn" id="nav-perfil" onclick="switchTab('perfil')"><span>👤</span>Perfil</button>
   </div>
 </div>
@@ -538,7 +642,7 @@ body{background:var(--negro);color:var(--blanco);font-family:'Barlow',sans-serif
   </div>
 </div>
 
-<!-- INCIDENCIA -->
+<!-- INCIDENCIA CON FOTOS -->
 <div class="modal-overlay" id="modal-incidencia">
   <div class="modal-card">
     <div class="modal-title rojo">⚠️ Registrar Incidencia</div>
@@ -552,11 +656,26 @@ body{background:var(--negro);color:var(--blanco);font-family:'Barlow',sans-serif
       </select>
     </div>
     <textarea id="inc-desc" placeholder="Descripción breve..."></textarea>
+
+    <!-- FOTOS -->
+    <button class="btn-camara" onclick="abrirCamara()">
+      📸 Añadir Foto / Vídeo
+    </button>
+    <input type="file" id="input-camara" accept="image/*" capture="environment" multiple style="display:none" onchange="procesarFotos(this)">
+    <div class="foto-counter" id="foto-counter" style="display:none;"></div>
+    <div class="foto-preview-grid" id="foto-preview-grid"></div>
+
     <div class="modal-btns">
-      <button class="btn-cancel" onclick="closeModal('modal-incidencia')">Cancelar</button>
+      <button class="btn-cancel" onclick="closeModal('modal-incidencia');limpiarFotos()">Cancelar</button>
       <button class="btn-enviar rojo" onclick="enviarIncidencia()">📤 Registrar</button>
     </div>
   </div>
+</div>
+
+<!-- VISOR FOTO GRANDE -->
+<div class="foto-visor-overlay" id="foto-visor" onclick="cerrarVisor()">
+  <img class="foto-visor-img" id="foto-visor-img" src="" alt="Foto incidencia">
+  <button class="foto-visor-close" onclick="cerrarVisor()">✕</button>
 </div>
 
 <!-- CHECKPOINT OK -->
@@ -680,7 +799,6 @@ function doLogin(){
   const tel=document.getElementById('login-tel').value.trim()||'34611948590';
   const gs=document.getElementById('login-sheets').value.trim();
   if(!ag||!pin||!ps){showToast('Completa todos los campos','red');return;}
-  initFirebase();
   if(pin.length<4){showToast('PIN de 4 dígitos','red');return;}
   agente=ag; puesto=ps; telefonoMando=tel; sheetsURL=gs;
   document.getElementById('wa-tel-display').textContent='+'+tel;
@@ -1283,13 +1401,19 @@ function enviarIncidencia(){
   nIncidencias++;
   document.getElementById('srv-incid').textContent=nIncidencias;
   const coords=lastLat?` (${lastLat.toFixed(4)},${lastLon.toFixed(4)})`:'';
-  addHistorial('incidencia',`⚠️ ${tipo}: ${desc.substring(0,40)}${coords}`);
-  guardarEnSheets('incidencia',{tipo:'INCIDENCIA',descripcion:`${tipo}: ${desc}`,lat:lastLat||0,lon:lastLon||0});
-  enviarEventoFirebase('INCIDENCIA',`${tipo}: ${desc}`);
-  waBotResponde(`⚠️ *Incidencia #${nIncidencias} registrada*\nTipo: ${tipo}\n${desc}\n🕐 ${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}`);
+  const nFotos=fotosIncidencia.length;
+  const fotoTexto=nFotos?` 📸 ${nFotos} foto${nFotos>1?'s':''}` : '';
+  addHistorial('incidencia',`⚠️ ${tipo}: ${desc.substring(0,35)}${coords}${fotoTexto}`);
+  guardarEnSheets('incidencia',{tipo:'INCIDENCIA',descripcion:`${tipo}: ${desc} [${nFotos} fotos]`,lat:lastLat||0,lon:lastLon||0});
+  // Guardar fotos en Firebase
+  const incId = `inc_${Date.now()}`;
+  if(nFotos > 0) guardarFotosFirebase(incId);
+  enviarEventoFirebase('INCIDENCIA',`${tipo}: ${desc} [${nFotos} foto${nFotos!==1?'s':''}]`);
+  waBotResponde(`⚠️ *Incidencia #${nIncidencias} registrada*\nTipo: ${tipo}\n${desc}${nFotos?`\n📸 ${nFotos} foto${nFotos>1?'s':''} adjuntas`:''}\n🕐 ${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})}`);
   closeModal('modal-incidencia');
   document.getElementById('inc-desc').value='';
-  showToast('Incidencia registrada','red');
+  limpiarFotos();
+  showToast(`Incidencia registrada${nFotos?' con '+nFotos+' foto'+(nFotos>1?'s':''):''}`, 'red');
 }
 
 // ==================== HISTORIAL ====================
@@ -1340,6 +1464,7 @@ function switchTab(tab){
   document.getElementById('tab-'+tab).classList.add('active');
   document.getElementById('nav-'+tab).classList.add('active');
   if(tab==='gps'&&mapInstance)setTimeout(()=>mapInstance.invalidateSize(),100);
+  if(tab==='entrega')setTimeout(()=>{initEntrega();},100);
   if(tab==='whatsapp')setTimeout(scrollWA,100);
 }
 
@@ -1406,6 +1531,366 @@ function enviarEventoFirebase(tipo, descripcion){
 setInterval(()=>{
   if(estado==='activo' && fbDb && lastLat) enviarEstadoFirebase('activo');
 }, 30000);
+
+
+
+// ==================== ENTREGA DE PUESTO ====================
+const AGENTES_LISTA = [
+  {nombre:'Carlos Ruiz', num:'V-0421'},
+  {nombre:'Ana Martínez', num:'V-0387'},
+  {nombre:'Pedro Sánchez', num:'V-0512'},
+  {nombre:'Laura García', num:'V-0298'},
+];
+
+const CHECKLIST_ITEMS = [
+  '🔑 Llaves del puesto entregadas',
+  '📱 Equipos de comunicación OK',
+  '📋 Libro de novedades actualizado',
+  '🔒 Perímetro verificado y seguro',
+  '📷 Cámaras de seguridad operativas',
+  '🚨 Sistemas de alarma activos',
+  '⚠️ Incidencias pendientes comunicadas',
+  '👔 Uniforme y acreditación en regla',
+];
+
+let checklistEstado = {};
+let firmasSaliente = false, firmasEntrante = false;
+let canvasSaliente = null, ctxSaliente = null;
+let canvasEntrante = null, ctxEntrante = null;
+let dibujandoSaliente = false, dibujandoEntrante = false;
+let agenteEntranteSeleccionado = '';
+
+function initEntrega(){
+  // Checklist
+  checklistEstado = {};
+  CHECKLIST_ITEMS.forEach((_,i) => checklistEstado[i] = false);
+  renderChecklist();
+
+  // Agentes
+  const grid = document.getElementById('entrega-agentes-grid');
+  grid.innerHTML = AGENTES_LISTA.filter(a => a.nombre !== agente).map((a,i) => `
+    <div class="agente-card" id="agente-card-${i}" onclick="seleccionarAgenteEntrante('${a.nombre}',${i})">
+      <div class="agente-card-nombre">${a.nombre}</div>
+      <div class="agente-card-num">${a.num}</div>
+    </div>`).join('');
+
+  // Canvas firmas
+  setTimeout(()=>{
+    initCanvas('saliente');
+    initCanvas('entrante');
+  }, 200);
+}
+
+function renderChecklist(){
+  const c = document.getElementById('checklist-entrega');
+  c.innerHTML = CHECKLIST_ITEMS.map((item,i) => `
+    <div class="checklist-item" onclick="toggleCheck(${i})">
+      <div class="checklist-check ${checklistEstado[i]?'checked':''}" id="check-${i}"></div>
+      <span class="checklist-texto ${checklistEstado[i]?'checked':''}">${item}</span>
+    </div>`).join('');
+}
+
+function toggleCheck(idx){
+  checklistEstado[idx] = !checklistEstado[idx];
+  renderChecklist();
+  validarEntregaCompleta();
+}
+
+function seleccionarAgenteEntrante(nombre, idx){
+  agenteEntranteSeleccionado = nombre;
+  document.querySelectorAll('.agente-card').forEach(c=>c.classList.remove('selected'));
+  const card = document.getElementById('agente-card-'+idx);
+  if(card) card.classList.add('selected');
+  document.getElementById('entrega-agente-manual').value = '';
+  validarEntregaCompleta();
+}
+
+function initCanvas(tipo){
+  const canvasEl = document.getElementById('canvas-firma-'+tipo);
+  if(!canvasEl) return;
+  canvasEl.width = canvasEl.offsetWidth || canvasEl.parentElement.offsetWidth || 300;
+  const ctx = canvasEl.getContext('2d');
+  ctx.strokeStyle = tipo==='saliente' ? '#c8a84b' : '#27ae60';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  if(tipo==='saliente'){
+    canvasSaliente=canvasEl; ctxSaliente=ctx;
+    canvasEl.addEventListener('pointerdown', e=>{ dibujandoSaliente=true; iniciarTrazo(e,ctxSaliente,canvasSaliente); e.preventDefault();});
+    canvasEl.addEventListener('pointermove', e=>{ if(dibujandoSaliente) continuarTrazo(e,ctxSaliente,canvasSaliente); e.preventDefault();});
+    canvasEl.addEventListener('pointerup', e=>{ dibujandoSaliente=false; ctxSaliente.beginPath(); verificarFirma('saliente'); e.preventDefault();});
+  } else {
+    canvasEntrante=canvasEl; ctxEntrante=ctx;
+    canvasEl.addEventListener('pointerdown', e=>{ dibujandoEntrante=true; iniciarTrazo(e,ctxEntrante,canvasEntrante); e.preventDefault();});
+    canvasEl.addEventListener('pointermove', e=>{ if(dibujandoEntrante) continuarTrazo(e,ctxEntrante,canvasEntrante); e.preventDefault();});
+    canvasEl.addEventListener('pointerup', e=>{ dibujandoEntrante=false; ctxEntrante.beginPath(); verificarFirma('entrante'); e.preventDefault();});
+  }
+}
+
+function iniciarTrazo(e, ctx, canvas){
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX||e.touches?.[0]?.clientX||0) - rect.left;
+  const y = (e.clientY||e.touches?.[0]?.clientY||0) - rect.top;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+}
+
+function continuarTrazo(e, ctx, canvas){
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX||e.touches?.[0]?.clientX||0) - rect.left;
+  const y = (e.clientY||e.touches?.[0]?.clientY||0) - rect.top;
+  ctx.lineTo(x, y);
+  ctx.stroke();
+}
+
+function verificarFirma(tipo){
+  const canvas = tipo==='saliente' ? canvasSaliente : canvasEntrante;
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  let hasContent = false;
+  for(let i=3; i<data.length; i+=4){ if(data[i]>20){ hasContent=true; break; } }
+  const dot = document.getElementById('firma-'+tipo+'-ok');
+  if(dot){ dot.classList.toggle('activa', hasContent); }
+  if(tipo==='saliente') firmasSaliente=hasContent;
+  else firmasEntrante=hasContent;
+  validarEntregaCompleta();
+}
+
+function limpiarFirma(tipo){
+  const canvas = tipo==='saliente' ? canvasSaliente : canvasEntrante;
+  if(!canvas) return;
+  canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+  const dot = document.getElementById('firma-'+tipo+'-ok');
+  if(dot) dot.classList.remove('activa');
+  if(tipo==='saliente') firmasSaliente=false;
+  else firmasEntrante=false;
+  validarEntregaCompleta();
+}
+
+function validarEntregaCompleta(){
+  const checksTodos = Object.values(checklistEstado).filter(Boolean).length;
+  const agenteOk = agenteEntranteSeleccionado || document.getElementById('entrega-agente-manual')?.value.trim();
+  const btn = document.getElementById('btn-completar-entrega');
+  if(btn) btn.disabled = !(checksTodos >= 5 && firmasSaliente && firmasEntrante && agenteOk);
+}
+
+function completarEntrega(){
+  const agenteEntrante = agenteEntranteSeleccionado || document.getElementById('entrega-agente-manual').value.trim();
+  if(!agenteEntrante){ showToast('Selecciona el agente entrante','red'); return; }
+  if(!firmasSaliente){ showToast('Falta tu firma (saliente)','red'); return; }
+  if(!firmasEntrante){ showToast('Falta la firma del agente entrante','red'); return; }
+
+  const novedades = document.getElementById('entrega-novedades').value.trim() || 'Sin novedades';
+  const checksOK = Object.values(checklistEstado).filter(Boolean).length;
+  const hora = new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+  const fecha = new Date().toLocaleDateString('es-ES');
+
+  // Registro historial
+  addHistorial('checkpoint', `🤝 Entrega puesto → ${agenteEntrante} · ${checksOK}/${CHECKLIST_ITEMS.length} items`);
+
+  // Firebase
+  const entregaData = {
+    agenteSaliente: agente,
+    agenteEntrante,
+    puesto,
+    hora, fecha,
+    checksCompletados: checksOK,
+    totalChecks: CHECKLIST_ITEMS.length,
+    novedades,
+    firmaSaliente: canvasSaliente ? canvasSaliente.toDataURL('image/png') : '',
+    firmaEntrante: canvasEntrante ? canvasEntrante.toDataURL('image/png') : '',
+    timestamp: Date.now()
+  };
+  if(fbDb) fbDb.ref('entregas').push(entregaData);
+
+  // Sheets
+  guardarEnSheets('entrega_puesto',{
+    tipo:'ENTREGA PUESTO',
+    descripcion:`Saliente: ${agente} → Entrante: ${agenteEntrante}. ${checksOK}/${CHECKLIST_ITEMS.length} checks. ${novedades.substring(0,60)}`,
+    lat:lastLat||0, lon:lastLon||0
+  });
+
+  // WA
+  waBotResponde(`🤝 *Entrega de Puesto Completada*\n━━━━━━━━━━━━\n👮 Saliente: ${agente}\n👮 Entrante: ${agenteEntrante}\n📍 ${puesto}\n🕐 ${hora}\n✅ ${checksOK}/${CHECKLIST_ITEMS.length} items verificados\n📝 ${novedades.substring(0,80)}\n\n✍️ Ambas firmas recogidas`);
+
+  // Generar PDF de entrega
+  generarPDFEntrega(entregaData);
+
+  showToast('🤝 Entrega completada y registrada', 'green');
+  switchTab('fichar');
+}
+
+function generarPDFEntrega(datos){
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const W = doc.internal.pageSize.getWidth();
+
+  // Header
+  doc.setFillColor(10,10,10); doc.rect(0,0,W,36,'F');
+  doc.setFillColor(200,168,75); doc.rect(0,34,W,2,'F');
+  doc.setTextColor(200,168,75); doc.setFontSize(18); doc.setFont('helvetica','bold');
+  doc.text('MARCIUS SEGURIDAD',W/2,13,{align:'center'});
+  doc.setFontSize(9); doc.setTextColor(170,170,170);
+  doc.text('ACTA DE ENTREGA DE PUESTO',W/2,22,{align:'center'});
+  doc.setFontSize(7.5);
+  doc.text(`+34 611 948 590  ·  Sevilla  ·  ${datos.fecha}`,W/2,29,{align:'center'});
+
+  // Datos entrega
+  let y = 46;
+  doc.setFillColor(245,245,240); doc.rect(0,36,W,45,'F');
+  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(154,122,46);
+  doc.text('DATOS DE LA ENTREGA', 14, y);
+  doc.setDrawColor(200,168,75); doc.line(14,y+2,W-14,y+2); y+=10;
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(30,30,30);
+  [
+    ['Puesto', datos.puesto, 'Hora', datos.hora],
+    ['Agente Saliente', datos.agenteSaliente, 'Agente Entrante', datos.agenteEntrante],
+    ['Checks completados', `${datos.checksCompletados}/${datos.totalChecks}`, 'Estado', datos.checksCompletados>=6?'CONFORME':'PARCIAL'],
+  ].forEach(([l1,v1,l2,v2])=>{
+    doc.setFont('helvetica','bold'); doc.text(l1+':',14,y);
+    doc.setFont('helvetica','normal'); doc.text(v1||'—',14+35,y);
+    doc.setFont('helvetica','bold'); doc.text(l2+':',W/2+4,y);
+    doc.setFont('helvetica','normal'); doc.text(v2||'—',W/2+4+30,y);
+    y+=8;
+  });
+
+  // Novedades
+  y+=4;
+  doc.setFillColor(20,20,20); doc.rect(0,y-5,W,7,'F');
+  doc.setTextColor(200,168,75); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  doc.text('NOVEDADES DEL TURNO', 14, y); y+=8;
+  doc.setFont('helvetica','normal'); doc.setTextColor(30,30,30); doc.setFontSize(8.5);
+  const novedadesLines = doc.splitTextToSize(datos.novedades||'Sin novedades', W-28);
+  doc.text(novedadesLines, 14, y); y += novedadesLines.length * 5 + 6;
+
+  // Checklist
+  doc.setFillColor(20,20,20); doc.rect(0,y-5,W,7,'F');
+  doc.setTextColor(200,168,75); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  doc.text('CHECKLIST DE ENTREGA', 14, y); y+=8;
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  CHECKLIST_ITEMS.forEach((item,i)=>{
+    if(y>270){doc.addPage();y=20;}
+    doc.setTextColor(checklistEstado[i]?[39,174,96]:[192,57,43]);
+    doc.text(checklistEstado[i]?'✓':'✗', 14, y);
+    doc.setTextColor(30,30,30);
+    doc.text(item, 22, y);
+    y+=6;
+  });
+
+  // Firmas
+  y+=6;
+  if(y>220){doc.addPage();y=20;}
+  doc.setFillColor(20,20,20); doc.rect(0,y-5,W,7,'F');
+  doc.setTextColor(200,168,75); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+  doc.text('FIRMAS', 14, y); y+=8;
+
+  const firmaW = (W-42)/2;
+  const firmaH = 35;
+
+  // Firma saliente
+  if(datos.firmaSaliente){
+    try{ doc.addImage(datos.firmaSaliente,'PNG',14,y,firmaW,firmaH); }catch(e){}
+  }
+  doc.setDrawColor(100,100,100); doc.rect(14,y,firmaW,firmaH);
+
+  // Firma entrante
+  if(datos.firmaEntrante){
+    try{ doc.addImage(datos.firmaEntrante,'PNG',W/2+4,y,firmaW,firmaH); }catch(e){}
+  }
+  doc.rect(W/2+4,y,firmaW,firmaH);
+
+  y+=firmaH+4;
+  doc.setFontSize(7.5); doc.setTextColor(100,100,100); doc.setFont('helvetica','normal');
+  doc.text(`Agente Saliente: ${datos.agenteSaliente}`, 14+firmaW/2, y, {align:'center'});
+  doc.text(`Agente Entrante: ${datos.agenteEntrante}`, W/2+4+firmaW/2, y, {align:'center'});
+
+  // Pie
+  doc.setFillColor(10,10,10); doc.rect(0,287,W,10,'F');
+  doc.setTextColor(154,122,46); doc.setFontSize(6.5);
+  doc.text(`Marcius Seguridad · Acta generada: ${new Date().toLocaleString('es-ES')}`,W/2,293,{align:'center'});
+
+  doc.save(`Entrega_Puesto_${datos.hora.replace(':','-')}_${datos.agenteSaliente.split(' ')[0]}_${datos.agenteEntrante.split(' ')[0]}.pdf`);
+  addHistorial('pdf','📄 Acta entrega puesto descargada');
+}
+
+// Inicializar entrega cuando se abre el tab
+// ==================== FOTOS INCIDENCIA ====================
+let fotosIncidencia = []; // Array de {dataURL, nombre, timestamp}
+
+function abrirCamara(){
+  document.getElementById('input-camara').click();
+}
+
+function procesarFotos(input){
+  const files = Array.from(input.files);
+  if(!files.length) return;
+  files.forEach(file => {
+    if(fotosIncidencia.length >= 5){ showToast('Máximo 5 fotos','red'); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const foto = {
+        dataURL: e.target.result,
+        nombre: `foto_${Date.now()}_${Math.random().toString(36).substr(2,5)}.jpg`,
+        timestamp: new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})
+      };
+      fotosIncidencia.push(foto);
+      renderFotoPreview();
+      showToast(`Foto ${fotosIncidencia.length} añadida ✓`,'green');
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = ''; // reset para poder añadir más
+}
+
+function renderFotoPreview(){
+  const grid = document.getElementById('foto-preview-grid');
+  const counter = document.getElementById('foto-counter');
+  if(!fotosIncidencia.length){
+    grid.innerHTML = '';
+    counter.style.display = 'none';
+    return;
+  }
+  counter.style.display = 'block';
+  counter.textContent = `${fotosIncidencia.length}/5 fotos añadidas`;
+  grid.innerHTML = fotosIncidencia.map((f,i) => `
+    <div class="foto-thumb">
+      <img src="${f.dataURL}" onclick="verFotoGrande('${f.dataURL}')" alt="Foto ${i+1}">
+      <button class="del-foto" onclick="eliminarFoto(${i})">✕</button>
+    </div>`).join('');
+}
+
+function eliminarFoto(idx){
+  fotosIncidencia.splice(idx,1);
+  renderFotoPreview();
+  showToast('Foto eliminada');
+}
+
+function verFotoGrande(dataURL){
+  document.getElementById('foto-visor-img').src = dataURL;
+  document.getElementById('foto-visor').classList.add('show');
+}
+
+function cerrarVisor(){
+  document.getElementById('foto-visor').classList.remove('show');
+}
+
+function limpiarFotos(){
+  fotosIncidencia = [];
+  renderFotoPreview();
+}
+
+function guardarFotosFirebase(incidenciaId){
+  if(!fbDb || !fotosIncidencia.length) return;
+  // Guardamos metadata (no el dataURL completo para no saturar Firebase)
+  const metadata = fotosIncidencia.map(f => ({
+    nombre: f.nombre,
+    timestamp: f.timestamp,
+    tamaño: Math.round(f.dataURL.length * 0.75 / 1024) + 'KB'
+  }));
+  fbDb.ref('incidencias/' + incidenciaId + '/fotos').set(metadata);
+}
 
 updateClock();
 </script>
